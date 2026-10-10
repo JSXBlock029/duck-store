@@ -252,3 +252,14 @@ def test_debug_off_by_default():
 def test_vercel_entry_serves_same_app():
     import vercel_app
     assert vercel_app.app is duck_store.app
+
+
+@pytest.mark.parametrize("env,on_vercel,expected", [
+    ({}, False, "sqlite:///duck_store.db"),
+    ({}, True, "sqlite:////tmp/duck_store.db"),                       # regression: crashed on Vercel
+    ({"DATABASE_URL": "sqlite:///duck_store.db"}, True, "sqlite:////tmp/duck_store.db"),
+    ({"DATABASE_URL": "sqlite:////data/shop.db"}, True, "sqlite:////data/shop.db"),   # absolute: untouched
+    ({"DATABASE_URL": "postgresql://u:p@h/db"}, True, "postgresql://u:p@h/db"),
+])
+def test_database_url_is_writable_on_vercel(env, on_vercel, expected):
+    assert duck_store.database_url(env, on_vercel) == expected

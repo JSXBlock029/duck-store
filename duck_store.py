@@ -35,7 +35,22 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY") or secrets.token_hex(32)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///duck_store.db")
+def database_url(env=os.environ, on_vercel=ON_VERCEL):
+    """Database URL for this environment.
+
+    A relative SQLite URL makes Flask-SQLAlchemy create an instance/ folder next to the
+    app. Vercel's app directory is read-only, so that crashes the function at import;
+    there, a relative SQLite file is moved to /tmp (writable, but reset between cold
+    starts: set DATABASE_URL to Postgres for orders that must persist).
+    """
+    url = env.get("DATABASE_URL") or "sqlite:///duck_store.db"
+    if on_vercel and url.startswith("sqlite:///") and not url.startswith("sqlite:////"):
+        name = url[len("sqlite:///"):].strip("/").replace("/", "_") or "duck_store.db"
+        url = "sqlite:////tmp/" + name
+    return url
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER") or ("/tmp/uploads" if ON_VERCEL else os.path.join(BASE_DIR, "uploads"))
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
