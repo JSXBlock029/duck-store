@@ -4,3 +4,4 @@ Werkzeug>=3.1,<4
 stripe>=12,<17
 python-dotenv>=1.0
 Pillow>=11
+psycopg[binary]>=3.2

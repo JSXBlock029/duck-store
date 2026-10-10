@@ -259,7 +259,16 @@ def test_vercel_entry_serves_same_app():
     ({}, True, "sqlite:////tmp/duck_store.db"),                       # regression: crashed on Vercel
     ({"DATABASE_URL": "sqlite:///duck_store.db"}, True, "sqlite:////tmp/duck_store.db"),
     ({"DATABASE_URL": "sqlite:////data/shop.db"}, True, "sqlite:////data/shop.db"),   # absolute: untouched
-    ({"DATABASE_URL": "postgresql://u:p@h/db"}, True, "postgresql://u:p@h/db"),
+    ({"DATABASE_URL": "postgresql://u:p@h/db"}, True, "postgresql+psycopg://u:p@h/db"),
+    ({"DATABASE_URL": "postgres://u:p@h/db?sslmode=require"}, True, "postgresql+psycopg://u:p@h/db?sslmode=require"),
+    ({"DATABASE_URL": "postgresql+psycopg://u:p@h/db"}, False, "postgresql+psycopg://u:p@h/db"),
 ])
 def test_database_url_is_writable_on_vercel(env, on_vercel, expected):
     assert duck_store.database_url(env, on_vercel) == expected
+
+
+def test_postgres_url_builds_an_engine_with_an_installed_driver():
+    """Regression: production crashed with "No module named 'psycopg'" for a Vercel Postgres URL."""
+    import sqlalchemy
+    engine = sqlalchemy.create_engine(duck_store.database_url({"DATABASE_URL": "postgres://u:p@localhost/db"}, True))
+    assert engine.dialect.driver == "psycopg"

@@ -44,6 +44,11 @@ def database_url(env=os.environ, on_vercel=ON_VERCEL):
     starts: set DATABASE_URL to Postgres for orders that must persist).
     """
     url = env.get("DATABASE_URL") or "sqlite:///duck_store.db"
+    # Hosted Postgres (Vercel Storage, Neon, Supabase) hands out postgres:// or postgresql://
+    # URLs. Pin them to the psycopg 3 driver that requirements.txt installs.
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            url = "postgresql+psycopg://" + url[len(prefix):]
     if on_vercel and url.startswith("sqlite:///") and not url.startswith("sqlite:////"):
         name = url[len("sqlite:///"):].strip("/").replace("/", "_") or "duck_store.db"
         url = "sqlite:////tmp/" + name
