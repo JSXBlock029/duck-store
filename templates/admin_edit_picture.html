@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ picture.title }} - Duck Store Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 760px;">
+    <h1 class="h3 mb-4">Edit picture</h1>
+    <div class="card">
+        <div class="card-body">
+            <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" alt="{{ picture.title }}"
+                 class="rounded mb-3" style="max-height: 220px;">
+            <form method="POST">
+                {% with values = {'title': picture.title, 'description': picture.description, 'price': '%.2f'|format(picture.price),
+                                  'category': picture.category, 'tags': picture.tags} %}{% include "_picture_form.html" %}{% endwith %}
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if picture.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">Visible in the shop</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a href="{{ url_for('admin_pictures') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

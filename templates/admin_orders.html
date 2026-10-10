@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - Duck Store Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Orders</h1>
+        <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary">Dashboard</a>
+    </div>
+
+    {% if orders %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Order</th><th>Date (UTC)</th><th>Customer</th><th>Items</th><th class="text-end">Total</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><a href="{{ url_for('order_confirmation', order_id=order.id) }}">#{{ order.id }}</a></td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ order.customer_email or '-' }}</td>
+                        <td>{% for item in order.items %}{{ item.duck_picture.title }} &times;{{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                        <td class="text-end">${{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' }}">{{ order.status.title() }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+        <p class="text-muted">No orders yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

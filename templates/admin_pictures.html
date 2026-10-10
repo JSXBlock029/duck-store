@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Pictures - Duck Store Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Pictures</h1>
+        <div>
+            <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary">Dashboard</a>
+            <a href="{{ url_for('admin_add_picture') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add picture</a>
+        </div>
+    </div>
+
+    {% if pictures %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th></th><th>Title</th><th>Category</th><th class="text-end">Price</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for picture in pictures %}
+                    <tr>
+                        <td style="width: 72px;">
+                            <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" alt=""
+                                 style="width: 56px; height: 56px; object-fit: cover;" class="rounded">
+                        </td>
+                        <td>{{ picture.title }}</td>
+                        <td>{{ picture.category or '-' }}</td>
+                        <td class="text-end">${{ "%.2f"|format(picture.price) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if picture.is_active else 'secondary' }}">
+                                {{ 'Active' if picture.is_active else 'Hidden' }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('admin_edit_picture', picture_id=picture.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+        <p class="text-muted">No pictures yet. <a href="{{ url_for('admin_add_picture') }}">Add the first one.</a></p>
+    {% endif %}
+</div>
+{% endblock %}
