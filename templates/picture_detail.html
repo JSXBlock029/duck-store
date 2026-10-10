@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ picture.title }} - Duck Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('gallery') }}">Gallery</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ picture.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card">
+                <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" class="card-img-top rounded"
+                     alt="{{ picture.title }}" style="object-fit: cover; max-height: 520px;">
+            </div>
+        </div>
+        <div class="col-md-5">
+            <h1 class="h2">{{ picture.title }}</h1>
+            {% if picture.category %}
+                <span class="badge bg-secondary mb-3">{{ picture.category }}</span>
+            {% endif %}
+            <p class="lead">{{ picture.description }}</p>
+            <p><span class="price-tag">${{ "%.2f"|format(picture.price) }}</span></p>
+
+            <form method="POST" action="{{ url_for('add_to_cart', picture_id=picture.id) }}" class="mt-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="input-group mb-3" style="max-width: 260px;">
+                    <label class="input-group-text" for="quantity">Qty</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" max="10">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-cart-plus"></i> Add to Cart
+                </button>
+                <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary btn-lg ms-2">View Cart</a>
+            </form>
+
+            {% if picture.tags %}
+                <div class="mt-4">
+                    {% for tag in picture.tags.split(',') if tag.strip() %}
+                        <span class="badge rounded-pill bg-light text-dark border me-1">{{ tag.strip() }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if related_pictures %}
+        <h2 class="h4 mt-5 mb-3">More {{ picture.category }}</h2>
+        <div class="row g-4">
+            {% for rel in related_pictures %}
+                <div class="col-6 col-md-3">
+                    <a href="{{ url_for('picture_detail', picture_id=rel.id) }}" class="text-decoration-none text-dark">
+                        <div class="card h-100">
+                            <img src="{{ url_for('uploaded_file', filename=rel.filename) }}" class="card-img-top"
+                                 alt="{{ rel.title }}" style="height: 160px; object-fit: cover;">
+                            <div class="card-body">
+                                <h3 class="h6 card-title">{{ rel.title }}</h3>
+                                <span class="price-tag">${{ "%.2f"|format(rel.price) }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

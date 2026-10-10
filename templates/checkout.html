@@ -127,6 +127,7 @@
                 </div>
                 
                 <!-- Stripe Payment Form -->
+                {% if stripe_configured() %}
                 <form id="payment-form">
                     <div class="mb-3">
                         <label for="card-element" class="form-label">Credit or debit card</label>
@@ -159,6 +160,12 @@
                         </small>
                     </div>
                 </form>
+                {% else %}
+                <div class="alert alert-warning" role="status">
+                    <i class="fas fa-info-circle"></i> Card payments are not enabled on this store yet.
+                    Your cart is saved; please check back soon.
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -181,10 +188,11 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if stripe_configured() %}
 <script src="https://js.stripe.com/v3/"></script>
 <script>
     // Initialize Stripe
-    const stripe = Stripe('{{ stripe_key }}');
+    const stripe = Stripe({{ stripe_key|tojson }});
     const elements = stripe.elements();
     
     // Create card element
@@ -246,12 +254,10 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-Token': {{ csrf_token()|tojson }},
                 },
-                body: JSON.stringify({
-                    amount: {{ total }},
-                    email: email,
-                    name: name
-                }),
+                // The server computes the amount from the cart; the browser never sends a price.
+                body: JSON.stringify({ email: email }),
             });
             
             const data = await response.json();
@@ -276,7 +282,7 @@
             }
             
             // Payment successful - redirect to success page
-            window.location.href = `/payment_success?payment_intent=${paymentIntent.id}`;
+            window.location.href = `/payment_success?payment_intent=${encodeURIComponent(paymentIntent.id)}`;
             
         } catch (error) {
             console.error('Payment error:', error);
@@ -310,4 +316,5 @@
         }
     });
 </script>
+{% endif %}
 {% endblock %}

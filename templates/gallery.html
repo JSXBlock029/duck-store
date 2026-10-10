@@ -101,6 +101,7 @@
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
                                 <form method="POST" action="{{ url_for('add_to_cart', picture_id=picture.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-success w-100">
                                         <i class="fas fa-cart-plus"></i> Add to Cart
                                     </button>

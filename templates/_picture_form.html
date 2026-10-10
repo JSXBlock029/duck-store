@@ -1,0 +1,26 @@
+{# Shared fields for the add and edit picture forms. Expects `values` (a dict-like) #}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" id="title" name="title" maxlength="100" required value="{{ values.get('title', '') }}">
+</div>
+<div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" id="description" name="description" rows="3">{{ values.get('description', '') or '' }}</textarea>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label for="price" class="form-label">Price (USD)</label>
+        <input type="number" class="form-control" id="price" name="price" min="0.5" max="10000" step="0.01" required
+               value="{{ values.get('price', '') }}">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="category" class="form-label">Category</label>
+        <input type="text" class="form-control" id="category" name="category" maxlength="50" value="{{ values.get('category', '') or '' }}">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="tags" class="form-label">Tags</label>
+        <input type="text" class="form-control" id="tags" name="tags" maxlength="200" placeholder="comma, separated"
+               value="{{ values.get('tags', '') or '' }}">
+    </div>
+</div>

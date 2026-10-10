@@ -38,11 +38,13 @@
                             <span class="fw-bold">${{ "%.2f"|format(item.subtotal) }}</span>
                         </div>
                         <div class="col-md-2 text-end">
-                            <a href="{{ url_for('remove_from_cart', picture_id=item.id) }}" 
-                               class="btn btn-outline-danger btn-sm"
-                               onclick="return confirm('Remove this picture from cart?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            <form method="POST" action="{{ url_for('remove_from_cart', picture_id=item.id) }}"
+                                  onsubmit="return confirm('Remove this picture from cart?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Remove {{ item.title }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                     {% endfor %}
