@@ -459,4 +459,4 @@ if __name__ == '__main__':
     print("💳 Credit card payments powered by Stripe")
     print("🌐 Visit http://localhost:5000 to start selling")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=os.getenv('FLASK_DEBUG') == '1', host=os.getenv('HOST', '127.0.0.1'), port=int(os.getenv('PORT', '5000')))
