@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}👑 Admin Dashboard - Duck Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">
+        <i class="fas fa-crown text-warning"></i> Admin Dashboard
+    </h1>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-images fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">{{ total_pictures }}</h3>
+                    <p class="card-text">Total Pictures</p>
+                    <a href="{{ url_for('admin_pictures') }}" class="btn btn-outline-primary">
+                        Manage Pictures
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-shopping-bag fa-3x text-success mb-3"></i>
+                    <h3 class="card-title">{{ total_orders }}</h3>
+                    <p class="card-text">Total Orders</p>
+                    <a href="{{ url_for('admin_orders') }}" class="btn btn-outline-success">
+                        View Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-3x text-warning mb-3"></i>
+                    <h3 class="card-title">${{ "%.2f"|format(total_revenue) }}</h3>
+                    <p class="card-text">Total Revenue</p>
+                    <a href="{{ url_for('admin_orders') }}" class="btn btn-outline-warning">
+                        View Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin_add_picture') }}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Add New Picture
+                        </a>
+                        <a href="{{ url_for('gallery') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> View Store Frontend
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home"></i> Go to Homepage
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Store Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ total_pictures }}</h4>
+                            <small class="text-muted">Active Pictures</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ total_orders }}</h4>
+                            <small class="text-muted">Total Orders</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h5 class="text-warning">${{ "%.2f"|format(total_revenue) }}</h5>
+                        <small class="text-muted">Total Revenue</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    {% if recent_orders %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-clock"></i> Recent Orders
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' }}">
+                                    {{ order.status.title() }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+🦆 DUCK STORE - Premium Duck Picture Sales Platform
+=====================================================
+
+📸 Sell your duck pictures with credit card payments!
+💳 Powered by Stripe for secure transactions
+🌐 Beautiful web interface for your customers
+
+🚀 QUICK START:
+===============
+
+1. DOUBLE-CLICK "START_HERE.bat" to begin
+   (This will guide you through setup and start your store)
+
+2. The setup script will:
+   - Install required Python packages
+   - Create configuration files
+   - Set up the database
+   - Create sample data
+
+3. After setup, your store will be available at:
+   - Main store: http://localhost:5000
+   - Admin panel: http://localhost:5000/admin
+
+📁 FILES INCLUDED:
+==================
+
+- duck_store.py          (Main application)
+- setup.py               (Setup script)
+- requirements.txt       (Python packages needed)
+- START_HERE.bat         (Easy startup - DOUBLE-CLICK THIS!)
+- start_duck_store.bat   (Alternative startup)
+- templates/             (Website templates)
+- uploads/               (Put your duck pictures here)
+- README.md              (Detailed documentation)
+
+🔑 WHAT YOU NEED:
+=================
+
+1. Python 3.7 or higher installed on your computer
+2. Internet connection for package installation
+3. Stripe account for credit card payments (optional for testing)
+
+💡 TIPS:
+=========
+
+- Add your duck pictures to the uploads/ folder
+- Use the admin panel to manage your store
+- Get Stripe API keys from https://dashboard.stripe.com
+- Test with Stripe test cards before going live
+
+🆘 NEED HELP?
+==============
+
+- Check the README.md file for detailed instructions
+- Visit Flask documentation: https://flask.palletsprojects.com/
+- Visit Stripe documentation: https://stripe.com/docs
+
+🦆 Happy Duck Picture Selling! 🦆📸💰

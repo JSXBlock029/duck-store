@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}🦆 Duck Store - Premium Duck Pictures{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">🦆 Premium Duck Pictures</h1>
+        <p class="lead mb-4">Discover the most beautiful and unique duck photographs captured by professional photographers</p>
+        <a href="{{ url_for('gallery') }}" class="btn btn-light btn-lg px-4">
+            <i class="fas fa-images"></i> Browse Gallery
+        </a>
+    </div>
+</section>
+
+<!-- Featured Pictures -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-star text-warning"></i> Featured Pictures
+        </h2>
+        
+        <div class="row g-4">
+            {% for picture in pictures %}
+            <div class="col-md-4 col-lg-2">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" 
+                             class="card-img-top" 
+                             alt="{{ picture.title }}"
+                             style="height: 200px; object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="price-tag">${{ "%.2f"|format(picture.price) }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ picture.title }}</h5>
+                        <p class="card-text text-muted">{{ picture.description[:100] }}{% if picture.description|length > 100 %}...{% endif %}</p>
+                        <div class="mt-auto">
+                            <a href="{{ url_for('picture_detail', picture_id=picture.id) }}" 
+                               class="btn btn-primary w-100">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if pictures|length == 0 %}
+        <div class="text-center py-5">
+            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No pictures available yet</h4>
+            <p class="text-muted">Check back soon for amazing duck pictures!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-tags text-primary"></i> Browse by Category
+        </h2>
+        
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-folder fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">{{ category }}</h5>
+                        <a href="{{ url_for('gallery', category=category) }}" 
+                           class="btn btn-outline-primary">
+                            Browse {{ category }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-heart text-danger"></i> Why Choose Duck Store?
+        </h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Professional Quality</h5>
+                        <p class="card-text">All our duck pictures are captured by professional photographers with high-resolution cameras.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Secure Payments</h5>
+                        <p class="card-text">Your credit card information is protected with industry-standard SSL encryption and Stripe security.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-download fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Instant Download</h5>
+                        <p class="card-text">Get your duck pictures immediately after payment - no waiting, no delays!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Start Your Duck Picture Collection?</h2>
+        <p class="lead mb-4">Join thousands of satisfied customers who have already discovered the joy of premium duck photography</p>
+        <a href="{{ url_for('gallery') }}" class="btn btn-light btn-lg px-5">
+            <i class="fas fa-shopping-cart"></i> Start Shopping Now
+        </a>
+    </div>
+</section>
+{% endblock %}
