@@ -406,6 +406,8 @@ def download(order_id, picture_id):
     item = next((i for i in order.items if i.duck_picture_id == picture_id), None)
     if not item or order.status != "completed":
         abort(404)
+    if item.duck_picture.filename.startswith("https://"):
+        return redirect(item.duck_picture.filename)
     return send_from_directory(app.config["UPLOAD_FOLDER"], item.duck_picture.filename, as_attachment=True)
 
 
@@ -421,6 +423,55 @@ def _parse_price(raw):
     return price if 0.5 <= price <= 10000 else None
 
 
+IMAGE_CONTENT_TYPES = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                       "gif": "image/gif", "webp": "image/webp"}
+BLOB_API_URL = "https://vercel.com/api/blob"
+BLOB_API_VERSION = "12"   # matches @vercel/blob 2.8.1, the reference for this request format
+
+
+def blob_put(pathname, data, content_type):
+    """Upload bytes to Vercel Blob (public) and return the file's permanent URL.
+
+    Vercel has no official Python SDK; this is the same request @vercel/blob's put()
+    sends. The token (set when a Blob store is connected to the project) looks like
+    vercel_blob_rw_<storeId>_<secret>.
+    """
+    import urllib.parse
+    import urllib.request
+
+    token = os.environ["BLOB_READ_WRITE_TOKEN"]
+    parts = token.split("_")
+    store_id = parts[3] if len(parts) > 3 else ""
+    req = urllib.request.Request(
+        f"{BLOB_API_URL}/?{urllib.parse.urlencode({'pathname': pathname})}",
+        data=data,
+        method="PUT",
+        headers={
+            "authorization": f"Bearer {token}",
+            "x-api-version": BLOB_API_VERSION,
+            "x-vercel-blob-store-id": store_id,
+            "x-vercel-blob-access": "public",
+            "x-content-type": content_type,
+            "x-add-random-suffix": "1",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        url = json.loads(resp.read().decode("utf-8"))["url"]
+    if not url.startswith("https://"):
+        raise ValueError("unexpected Blob response")
+    return url
+
+
+def picture_src(filename):
+    """Where the browser loads a picture from: a Blob URL as-is, a local file via /uploads."""
+    if str(filename).startswith("https://"):
+        return filename
+    return url_for("uploaded_file", filename=filename)
+
+
+app.jinja_env.globals["picture_src"] = picture_src
+
+
 def _save_image(file):
     """Store an uploaded image under a random name. Returns the filename, or None if it is not a real image."""
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
@@ -434,6 +485,8 @@ def _save_image(file):
     except Exception:
         return None
     name = f"{uuid.uuid4().hex}.{ext}"
+    if os.getenv("BLOB_READ_WRITE_TOKEN"):
+        return blob_put(f"pictures/{name}", data, IMAGE_CONTENT_TYPES[ext])
     with open(os.path.join(app.config["UPLOAD_FOLDER"], name), "wb") as fh:
         fh.write(data)
     return name
@@ -467,7 +520,12 @@ def admin_add_picture():
         if not file or not file.filename:
             flash("No picture file selected!", "error")
             return render_template("admin_add_picture.html", form=request.form), 400
-        filename = _save_image(file)
+        try:
+            filename = _save_image(file)
+        except Exception:
+            app.logger.exception("Picture upload to storage failed")
+            flash("The picture could not be uploaded to storage. Please try again.", "error")
+            return render_template("admin_add_picture.html", form=request.form), 502
         if not filename:
             flash("That file is not a supported image (png, jpg, gif, webp).", "error")
             return render_template("admin_add_picture.html", form=request.form), 400

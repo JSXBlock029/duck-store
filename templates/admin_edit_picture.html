@@ -7,7 +7,7 @@
     <h1 class="h3 mb-4">Edit picture</h1>
     <div class="card">
         <div class="card-body">
-            <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" alt="{{ picture.title }}"
+            <img src="{{ picture_src(picture.filename) }}" alt="{{ picture.title }}"
                  class="rounded mb-3" style="max-height: 220px;">
             <form method="POST">
                 {% with values = {'title': picture.title, 'description': picture.description, 'price': '%.2f'|format(picture.price),

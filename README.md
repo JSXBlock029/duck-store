@@ -32,6 +32,7 @@ Without Stripe keys the shop runs normally and the checkout page says payments a
 | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` | Enable card payments. Use `sk_test_` / `pk_test_` keys first. |
 | `DATABASE_URL` | Defaults to SQLite. Use Postgres in production so orders persist. |
 | `UPLOAD_FOLDER` | Where pictures are stored. Defaults to `./uploads` (or `/tmp/uploads` on Vercel). |
+| `BLOB_READ_WRITE_TOKEN` | Set automatically when a Vercel Blob store is connected. Admin uploads then go to Blob and survive restarts. |
 
 ## Security
 
@@ -43,7 +44,7 @@ Without Stripe keys the shop runs normally and the checkout page says payments a
 
 ## Deploying on Vercel
 
-`vercel.json` routes everything to `api/index.py`, which serves the same app. Set the environment variables above in the Vercel project. Vercel's filesystem is temporary, so set `DATABASE_URL` to a hosted Postgres database and move picture storage to external storage before taking real orders.
+`vercel.json` routes everything to `api/index.py`, which serves the same app. Set the environment variables above in the Vercel project. Vercel's filesystem is temporary, so connect a Postgres database (`DATABASE_URL`) for orders and a Blob store (`BLOB_READ_WRITE_TOKEN`) for uploaded pictures.
 
 ## Tests
 
@@ -52,4 +53,4 @@ pip install -r requirements.txt pytest
 pytest
 ```
 
-47 tests cover the storefront, cart limits, CSRF, the admin guard and upload validation, and the payment flow end to end with a fake Stripe (server-side amounts, replays, swapped carts, underpayments, foreign PaymentIntents). The network is blocked during tests.
+Tests cover the storefront, cart limits, CSRF, the admin guard and upload validation, and the payment flow end to end with a fake Stripe (server-side amounts, replays, swapped carts, underpayments, foreign PaymentIntents). The network is blocked during tests.

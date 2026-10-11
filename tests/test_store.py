@@ -272,3 +272,86 @@ def test_postgres_url_builds_an_engine_with_an_installed_driver():
     import sqlalchemy
     engine = sqlalchemy.create_engine(duck_store.database_url({"DATABASE_URL": "postgres://u:p@localhost/db"}, True))
     assert engine.dialect.driver == "psycopg"
+
+
+# ---------------- Vercel Blob storage for uploads ----------------
+
+class _FakeBlobResponse:
+    def __init__(self, body):
+        self.body = body
+
+    def read(self):
+        return self.body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_upload_goes_to_blob_when_token_set(client, monkeypatch, app):
+    sent = {}
+
+    def fake_urlopen(req, timeout=None):
+        sent.update(url=req.full_url, method=req.get_method(), headers=dict(req.header_items()), body=req.data)
+        return _FakeBlobResponse(b'{"url": "https://abc123.public.blob.vercel-storage.com/pictures/x-Rnd.png"}')
+
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setenv("BLOB_READ_WRITE_TOKEN", "vercel_blob_rw_abc123_secretpart")
+    monkeypatch.setenv("ADMIN_PASSWORD", "pw")
+    t = csrf(client)
+    r = client.post("/admin/add_picture", headers=basic("pw"), content_type="multipart/form-data",
+                    data={"csrf_token": t, "title": "Blob Duck", "price": "5", "picture": (_png(), "duck.png")})
+    assert r.status_code == 302
+    # Same request shape as @vercel/blob's put()
+    assert sent["method"] == "PUT"
+    assert sent["url"].startswith("https://vercel.com/api/blob/?pathname=pictures%2F") and sent["url"].endswith(".png")
+    h = {k.lower(): v for k, v in sent["headers"].items()}
+    assert h["authorization"] == "Bearer vercel_blob_rw_abc123_secretpart"
+    assert h["x-api-version"] == "12" and h["x-vercel-blob-store-id"] == "abc123"
+    assert h["x-vercel-blob-access"] == "public" and h["x-content-type"] == "image/png"
+    assert sent["body"][:8] == b"\x89PNG\r\n\x1a\n"
+    with app.app_context():
+        pic = duck_store.DuckPicture.query.filter_by(title="Blob Duck").one()
+        assert pic.filename == "https://abc123.public.blob.vercel-storage.com/pictures/x-Rnd.png"
+        pid = pic.id
+    page = client.get(f"/picture/{pid}").get_data(as_text=True)
+    assert 'src="https://abc123.public.blob.vercel-storage.com/pictures/x-Rnd.png"' in page
+
+
+def test_blob_failure_is_reported_not_a_crash(client, monkeypatch, app):
+    import urllib.request
+
+    def boom(req, timeout=None):
+        raise OSError("blob down")
+
+    monkeypatch.setattr(urllib.request, "urlopen", boom)
+    monkeypatch.setenv("BLOB_READ_WRITE_TOKEN", "vercel_blob_rw_abc123_secret")
+    monkeypatch.setenv("ADMIN_PASSWORD", "pw")
+    t = csrf(client)
+    r = client.post("/admin/add_picture", headers=basic("pw"), content_type="multipart/form-data",
+                    data={"csrf_token": t, "title": "Lost Duck", "price": "5", "picture": (_png(), "duck.png")})
+    assert r.status_code == 502
+    with app.app_context():
+        assert duck_store.DuckPicture.query.filter_by(title="Lost Duck").count() == 0
+
+
+def test_local_pictures_still_served_from_uploads(client):
+    assert '/uploads/sample_mallard.jpg' in client.get("/picture/1").get_data(as_text=True)
+
+
+def test_blob_picture_download_redirects_to_blob(client, fake_stripe, app):
+    with app.app_context():
+        pic = duck_store.db.session.get(duck_store.DuckPicture, 2)
+        pic.filename = "https://abc123.public.blob.vercel-storage.com/pictures/d.png"
+        duck_store.db.session.commit()
+    t = csrf(client)
+    add(client, 2, 1, t)
+    client.post("/create_payment_intent", json={}, headers={"X-CSRF-Token": t})
+    pid = next(iter(fake_stripe.intents))
+    fake_stripe.pay(pid)
+    client.get(f"/payment_success?payment_intent={pid}")
+    r = client.get("/download/1/2")
+    assert r.status_code == 302 and r.headers["Location"] == "https://abc123.public.blob.vercel-storage.com/pictures/d.png"

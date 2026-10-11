@@ -15,7 +15,7 @@
     <div class="row g-4">
         <div class="col-md-7">
             <div class="card">
-                <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" class="card-img-top rounded"
+                <img src="{{ picture_src(picture.filename) }}" class="card-img-top rounded"
                      alt="{{ picture.title }}" style="object-fit: cover; max-height: 520px;">
             </div>
         </div>
@@ -56,7 +56,7 @@
                 <div class="col-6 col-md-3">
                     <a href="{{ url_for('picture_detail', picture_id=rel.id) }}" class="text-decoration-none text-dark">
                         <div class="card h-100">
-                            <img src="{{ url_for('uploaded_file', filename=rel.filename) }}" class="card-img-top"
+                            <img src="{{ picture_src(rel.filename) }}" class="card-img-top"
                                  alt="{{ rel.title }}" style="height: 160px; object-fit: cover;">
                             <div class="card-body">
                                 <h3 class="h6 card-title">{{ rel.title }}</h3>

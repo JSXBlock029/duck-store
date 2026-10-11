@@ -23,7 +23,7 @@
                     {% for picture in pictures %}
                     <tr>
                         <td style="width: 72px;">
-                            <img src="{{ url_for('uploaded_file', filename=picture.filename) }}" alt=""
+                            <img src="{{ picture_src(picture.filename) }}" alt=""
                                  style="width: 56px; height: 56px; object-fit: cover;" class="rounded">
                         </td>
                         <td>{{ picture.title }}</td>

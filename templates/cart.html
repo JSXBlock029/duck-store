@@ -22,7 +22,7 @@
                     {% for item in cart_items %}
                     <div class="row align-items-center py-3 border-bottom">
                         <div class="col-md-2">
-                            <img src="{{ url_for('uploaded_file', filename=item.filename) }}" 
+                            <img src="{{ picture_src(item.filename) }}" 
                                  class="img-fluid rounded" 
                                  alt="{{ item.title }}"
                                  style="max-height: 80px; object-fit: cover;">
