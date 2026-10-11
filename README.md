@@ -2,8 +2,7 @@
 
 A small Flask storefront that sells duck pictures with Stripe card payments: a gallery with search and categories, a session cart, Stripe checkout, instant downloads after payment, and a password-protected admin area for pictures and orders.
 
-![CI](https://github.com/lowriskbtc/duck-store/actions/workflows/ci.yml/badge.svg)
-
+[![CI](https://github.com/lowriskbtc/duck-store/actions/workflows/ci.yml/badge.svg)](https://github.com/lowriskbtc/duck-store/actions/workflows/ci.yml) ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ## Features
 
 - **Gallery** with search, category filters and pagination
